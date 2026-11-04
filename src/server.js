@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { pool } from './db.js';
-import { postBooking } from './bookings.js';
+import { postBooking, getBooking, cancelBooking } from './bookings.js';
 
 const app = express();
 app.use(express.json());
@@ -56,6 +56,8 @@ app.get('/slots', async (req, res) => {
 });
 
 app.post('/bookings', postBooking);
+app.get('/bookings/:id', getBooking);
+app.delete('/bookings/:id', cancelBooking);
 
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 app.use((err, req, res, next) => {

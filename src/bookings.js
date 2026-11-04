@@ -55,6 +55,25 @@ async function createBooking(client, body) {
   return { status: 201, body: toBooking(ins.rows[0]) };
 }
 
+export async function getBooking(req, res) {
+  const { rows } = await pool.query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+  if (!rows.length) return res.status(404).json({ error: 'booking not found' });
+  res.json(toBooking(rows[0]));
+}
+
+export async function cancelBooking(req, res) {
+  const { rows } = await pool.query(
+    `UPDATE bookings SET status = 'cancelled'
+     WHERE id = $1 AND status = 'confirmed'
+     RETURNING *`,
+    [req.params.id]);
+  if (rows.length) return res.json(toBooking(rows[0]));
+
+  const exists = await pool.query('SELECT 1 FROM bookings WHERE id = $1', [req.params.id]);
+  if (!exists.rowCount) return res.status(404).json({ error: 'booking not found' });
+  res.status(409).json({ error: 'booking is already cancelled' });
+}
+
 export async function postBooking(req, res) {
   const idemKey = req.get('Idempotency-Key');
   const hash = crypto.createHash('sha256').update(JSON.stringify(req.body ?? {})).digest('hex');
