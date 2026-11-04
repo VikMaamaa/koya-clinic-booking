@@ -41,6 +41,19 @@ app.post('/reset', async (req, res) => {
   }
 });
 
+app.get('/slots', async (req, res) => {
+  const provider = typeof req.query.provider === 'string' ? req.query.provider : null;
+  const { rows } = await pool.query(
+    `SELECT s.id, s.provider, s.start_raw AS start, s.end_raw AS "end",
+            NOT EXISTS (SELECT 1 FROM bookings b
+                        WHERE b.slot_id = s.id AND b.status = 'confirmed') AS available
+     FROM slots s
+     WHERE ($1::text IS NULL OR s.provider = $1)
+     ORDER BY s.start_at, s.id`,
+    [provider]);
+  res.json({ slots: rows });
+});
+
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid JSON' });
