@@ -13,7 +13,33 @@ app.use((req, res, next) => {                   // Level 2: API key on everythin
   next();
 });
 
-// ... routes go here (steps 5 to 9) ...
+app.post('/reset', async (req, res) => {
+  const slots = req.body?.slots;
+  if (!Array.isArray(slots)) return res.status(400).json({ error: 'slots must be an array' });
+  const isValidSlot = (s) =>
+    s && ['id', 'provider', 'start', 'end'].every((k) => typeof s[k] === 'string' && s[k]) &&
+    !isNaN(Date.parse(s.start)) && !isNaN(Date.parse(s.end));
+  if (!slots.every(isValidSlot)) return res.status(400).json({ error: 'each slot needs id, provider, start and end' });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('TRUNCATE bookings, idempotency_keys, booking_attempts, slots');
+    for (const s of slots) {
+      await client.query(
+        `INSERT INTO slots(id, provider, start_at, end_at, start_raw, end_raw)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [s.id, s.provider, s.start, s.end, s.start, s.end]);
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true });
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+});
 
 app.use((req, res) => res.status(404).json({ error: 'not found' }));
 app.use((err, req, res, next) => {
