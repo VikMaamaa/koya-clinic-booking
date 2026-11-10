@@ -55,6 +55,36 @@ async function createBooking(client, body) {
   return { status: 201, body: toBooking(ins.rows[0]) };
 }
 
+export async function listBookings(req, res) {
+  const email = typeof req.query.email === 'string' ? req.query.email.trim().toLowerCase() : '';
+  if (!email) return res.status(400).json({ error: 'email is required' });
+
+  let limit = 10;
+  if (req.query.limit !== undefined) {
+    const raw = String(req.query.limit);
+    limit = /^\d+$/.test(raw) ? Number(raw) : NaN;
+    if (!(limit >= 1 && limit <= 50)) return res.status(400).json({ error: 'limit must be an integer from 1 to 50' });
+  }
+
+  let afterSeq = 0;
+  if (req.query.cursor !== undefined) {
+    const decoded = Buffer.from(String(req.query.cursor), 'base64url').toString();
+    if (!/^\d{1,18}$/.test(decoded)) return res.status(400).json({ error: 'cursor is not valid' });
+    afterSeq = decoded;
+  }
+
+  // Fetch one extra row to know whether another page exists.
+  const { rows } = await pool.query(
+    'SELECT * FROM bookings WHERE email = $1 AND seq > $2 ORDER BY seq LIMIT $3',
+    [email, afterSeq, limit + 1]);
+  const page = rows.slice(0, limit);
+  const nextCursor = rows.length > limit
+    ? Buffer.from(String(page[page.length - 1].seq)).toString('base64url')
+    : null;
+
+  res.json({ bookings: page.map(toBooking), next_cursor: nextCursor });
+}
+
 export async function getBooking(req, res) {
   const { rows } = await pool.query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
   if (!rows.length) return res.status(404).json({ error: 'booking not found' });
