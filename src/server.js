@@ -7,6 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));              // web page at "/", loads without a key
 app.get('/health', (req, res) => res.json({ ok: true }));
+// The page needs the key to call the API; serving it here keeps it out of the repo.
+app.get('/config.js', (req, res) => {
+  res.type('application/javascript').send(`window.API_KEY = ${JSON.stringify(process.env.API_KEY)};`);
+});
 
 app.use((req, res, next) => {                   // Level 2: API key on everything below
   if (req.get('X-API-Key') !== process.env.API_KEY)
