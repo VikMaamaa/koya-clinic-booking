@@ -459,10 +459,38 @@ function afterCancel(updated) {
 
 $('close-panel').addEventListener('click', closePanel);
 $('backdrop').addEventListener('click', closePanel);
+function setNav(section) {
+  for (const [id, name] of [['nav-book', 'book'], ['nav-mine', 'mine']]) {
+    if (section === name) $(id).setAttribute('aria-current', 'page');
+    else $(id).removeAttribute('aria-current');
+  }
+}
+
+function goToBook(e) {
+  e?.preventDefault();
+  history.replaceState(null, '', '#book');
+  setNav('book');
+  $('picker-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('picker-title').focus({ preventScroll: true });
+}
+
+function goToMyBookings(e) {
+  e?.preventDefault();
+  history.replaceState(null, '', '#my-bookings');
+  setNav('mine');
+  const section = $('my-bookings');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  section.focus({ preventScroll: true });
+  // Prefer focusing the email field once the section is in view.
+  setTimeout(() => $('lookup-email').focus({ preventScroll: true }), 350);
+}
+
+$('nav-book').addEventListener('click', goToBook);
+$('nav-mine').addEventListener('click', goToMyBookings);
+$('view-mine').addEventListener('click', goToMyBookings);
 $('book-another').addEventListener('click', () => {
   closePanel();
-  $('picker-title').focus();
-  $('picker-title').scrollIntoView({ behavior: 'smooth' });
+  goToBook();
 });
 $('add-cal').addEventListener('click', () => downloadCalendar(state.booking));
 $('cancel-link').addEventListener('click', () => cancelBooking(state.booking));
@@ -495,10 +523,10 @@ async function loadMyBookings(append) {
     const { bookings, next_cursor } = await api('GET', `/bookings?${params}`);
     state.nextCursor = next_cursor;
     const rows = bookings.map(bookingRow);
-    if (append) $('my-bookings').append(...rows);
-    else $('my-bookings').replaceChildren(...rows);
+    if (append) $('booking-list').append(...rows);
+    else $('booking-list').replaceChildren(...rows);
     $('more').classList.toggle('hidden', !next_cursor);
-    $('lookup-msg').textContent = $('my-bookings').children.length ? '' : 'No bookings found for that email.';
+    $('lookup-msg').textContent = $('booking-list').children.length ? '' : 'No bookings found for that email.';
   } catch (err) {
     $('lookup-msg').textContent = err instanceof ApiError ? err.message : 'We couldn’t reach the clinic. Please try again.';
   } finally {
@@ -538,6 +566,8 @@ setPanel('empty');
 loadSlots().then(() => {
   const saved = localStorage.getItem(EMAIL_STORE);
   if (saved) showMyBookings(saved);
+  if (location.hash === '#my-bookings') goToMyBookings();
+  else setNav('book');
 });
 
 // Keep availability fresh: when the tab regains focus, and every 30s while it's visible.

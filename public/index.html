@@ -15,6 +15,10 @@
   <header class="topbar">
     <div class="wrap topbar-inner">
       <a class="brand" href="/"><span class="logo" aria-hidden="true">K</span>Koya Clinic</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#book" id="nav-book" class="nav-link" aria-current="page">Book</a>
+        <a href="#my-bookings" id="nav-mine" class="nav-link">My bookings</a>
+      </nav>
       <ol class="stepper" id="stepper" aria-label="Booking progress">
         <li data-step="1"><span class="label">Choose a time</span></li>
         <li data-step="2"><span class="label">Your details</span></li>
@@ -23,7 +27,7 @@
     </div>
   </header>
 
-  <main class="wrap layout">
+  <main class="wrap layout" id="book">
     <section class="picker" aria-labelledby="picker-title">
       <h1 id="picker-title" tabindex="-1">Book an appointment</h1>
       <p class="lede">Choose a doctor and a time that suits you. Appointments last 30 minutes.</p>
@@ -88,19 +92,21 @@
         <p class="muted small">Booked for <span id="done-email"></span></p>
         <div class="stack">
           <button class="btn btn-primary" id="add-cal" type="button">Add to calendar</button>
-          <button class="btn btn-secondary" id="book-another" type="button">Book another time</button>
+          <button class="btn btn-secondary" id="view-mine" type="button">View in My bookings</button>
+          <button class="btn btn-ghost" id="book-another" type="button">Book another time</button>
         </div>
         <button class="link-danger" id="cancel-link" type="button">Cancel this booking</button>
       </div>
     </aside>
   </main>
 
-  <section class="wrap">
-    <div class="card mine" aria-labelledby="mine-title">
+  <section class="wrap mine-section" id="my-bookings" aria-labelledby="mine-title" tabindex="-1">
+    <div class="card mine">
       <div class="mine-head">
         <div>
+          <p class="eyebrow">Returning patients</p>
           <h2 id="mine-title">My bookings</h2>
-          <p class="muted">Look up appointments made with your email.</p>
+          <p class="muted">Find appointments booked with your email. You can view or cancel them here.</p>
         </div>
         <form id="lookup" class="lookup">
           <label class="sr-only" for="lookup-email">Email</label>
@@ -108,7 +114,7 @@
           <button class="btn btn-secondary" type="submit">Find</button>
         </form>
       </div>
-      <ul class="booking-list" id="my-bookings"></ul>
+      <ul class="booking-list" id="booking-list"></ul>
       <button class="btn btn-ghost hidden" id="more" type="button">Load more</button>
       <p class="muted small" id="lookup-msg" aria-live="polite"></p>
     </div>

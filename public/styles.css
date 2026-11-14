@@ -39,11 +39,17 @@ h1, h2, h3 { line-height: 1.25; }
 
 /* Header */
 .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
-.topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); text-decoration: none; }
+.topbar-inner { display: flex; align-items: center; gap: 20px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); text-decoration: none; flex-shrink: 0; }
 .logo { width: 32px; height: 32px; border-radius: 9px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 800; }
-
-.stepper { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; font-size: .875rem; color: var(--muted); counter-reset: step; }
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  padding: 8px 12px; border-radius: 8px; text-decoration: none;
+  font-size: .9rem; font-weight: 600; color: var(--muted);
+}
+.nav-link:hover { color: var(--text); background: var(--bg); }
+.nav-link[aria-current="page"] { color: var(--brand); background: var(--brand-soft); }
+.stepper { display: flex; align-items: center; gap: 8px; list-style: none; margin: 0 0 0 auto; padding: 0; font-size: .875rem; color: var(--muted); counter-reset: step; }
 .stepper li { display: flex; align-items: center; gap: 8px; counter-increment: step; }
 .stepper li::before {
   content: counter(step);
@@ -192,10 +198,12 @@ input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(185, 28, 28, .2); 
 
 /* My bookings */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; }
-.mine { margin: 8px 0 56px; }
+.mine-section { scroll-margin-top: 88px; outline: none; padding-top: 8px; }
+.mine { margin: 0 0 56px; }
 .mine-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-.mine-head h2 { font-size: 1.15rem; margin: 0 0 2px; }
-.mine-head p { margin: 0; }
+.eyebrow { margin: 0 0 4px; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
+.mine-head h2 { font-size: 1.25rem; margin: 0 0 4px; }
+.mine-head .muted { margin: 0; max-width: 36ch; }
 .lookup { display: flex; gap: 8px; flex: 1 1 320px; max-width: 440px; }
 .booking-list { list-style: none; padding: 0; margin: 8px 0 0; }
 .booking-list li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 14px 0; border-top: 1px solid var(--border); }
@@ -244,9 +252,13 @@ dialog p { color: var(--muted); margin: 0 0 20px; }
   body.sheet-open .backdrop { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(15, 23, 42, .4); }
 }
 
+@media (max-width: 720px) {
+  .stepper { display: none; }
+}
+
 @media (max-width: 640px) {
-  .stepper li:not(.current) .label { display: none; }
-  .stepper li:not(:last-child)::after { width: 12px; }
+  .topbar-inner { gap: 12px; }
+  .nav-link { padding: 8px 10px; }
   h1 { font-size: 1.45rem; }
   .times { padding: 16px; }
   .time-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
