@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node test.mjs",
+    "seed": "node seed.mjs",
     "start": "node src/server.js"
   },
   "keywords": [],
